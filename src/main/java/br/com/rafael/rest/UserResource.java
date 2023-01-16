@@ -1,5 +1,6 @@
 package br.com.rafael.rest;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -12,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import br.com.rafael.domain.repository.UserRepository;
 import br.com.rafael.dto.CreateUserRequest;
 import br.com.rafael.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -20,6 +22,13 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
+
+    private UserRepository repository;
+
+    @Inject
+    public UserResource(UserRepository repository){
+        this.repository = repository;
+    }
     
     @POST
     @Transactional
@@ -27,13 +36,13 @@ public class UserResource {
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
-        user.persist();
+        repository.persist(user);
         return Response.ok(user).build();
     }
 
     @GET
     public Response listAllUsers(){
-        PanacheQuery<User> query = User.findAll();
+        PanacheQuery<User> query = repository.findAll();
         return Response.ok(query.list()).build();
     }
 
@@ -41,9 +50,9 @@ public class UserResource {
     @Transactional
     @Path("{id}")
     public Response deleteUser(@PathParam("id") Long id){ // Esse parametro do PathParam é o que vc está recebendo da URL, o nome deve se o mesmo
-        User user = User.findById(id);
+        User user = repository.findById(id);
         if(user != null){
-            user.delete();
+            repository.delete(user);
             return Response.ok().build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
@@ -55,7 +64,7 @@ public class UserResource {
     @Transactional
     @Path("{id}")
     public Response updateUser(@PathParam("id") Long id, CreateUserRequest userData){
-        User user = User.findById(id);
+        User user = repository.findById(id);
         if(user != null){
             user.setName(userData.getName());
             user.setAge(userData.getAge());
