@@ -1,0 +1,8 @@
+USE db;
+
+CREATE TABLE USERS(
+	id bigint NOT NULL AUTO_INCREMENT,
+	name varchar(255)NOT NULL,
+	age INTEGER NOT NULL,
+	PRIMARY KEY(id)
+);
