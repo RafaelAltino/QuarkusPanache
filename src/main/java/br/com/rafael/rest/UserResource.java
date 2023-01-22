@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 
 import br.com.rafael.domain.repository.UserRepository;
 import br.com.rafael.dto.CreateUserRequest;
+import br.com.rafael.dto.ResponseError;
 import br.com.rafael.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 
@@ -42,9 +43,10 @@ public class UserResource {
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
         if(!violations.isEmpty()){   //Verifica se violação não está vazio, ou seja, se a requisição foi feita errada
-            ConstraintViolation<CreateUserRequest> erro = violations.stream().findAny().get();
-            String errorMessage = erro.getMessage();
-            return Response.status(400).entity(errorMessage).build();
+            
+            ResponseError responseError = ResponseError.createFromValidation(violations);
+
+            return Response.status(400).entity(responseError).build();
         }
 
         User user = new User();
